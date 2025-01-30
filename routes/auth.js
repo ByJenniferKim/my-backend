@@ -21,7 +21,10 @@ router.post("/register", async (req, res) => {
 
     // Check if user already exists
     let user = await User.findOne({ email });
-    if (user) return res.status(400).json({ msg: "User already exists" });
+    if (user) {
+      console.log("User already exists!", email);
+      return res.status(400).json({ msg: "User already exists" });
+    }
 
     // Hash password
     const salt = await bcrypt.genSalt(10);
@@ -33,10 +36,10 @@ router.post("/register", async (req, res) => {
 
     console.log("User registered successfully as", role);
 
-    res.status(201).json({ msg: `User registered successfully as ${role}`, user: { username, email, role } });
+    res.status(201).json({ msg: "User registered successfully", user });
   } catch (err) {
-    console.error("Error in register route:", err);
-    res.status(500).json({ msg: "Server error" });
+    console.error("Error in reguster route:", err);
+    resizeTo.status(500).json({ msg: "Server error" });
   }
 });
 
