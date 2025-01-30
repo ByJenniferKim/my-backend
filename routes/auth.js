@@ -13,6 +13,11 @@ router.post("/register", async (req, res) => {
     const { username, email, password } = req.body;
     console.log("Received data:", {username, email, password});
 
+    // Validate role
+    if (!["creator", "customer"].includes(role)) {
+        return res.status(400).json({ msg: "Invalid role selected." });
+    }
+
     // Check if user already exists
     let user = await User.findOne({ email });
     if (user) return res.status(400).json({ msg: "User already exists" });
@@ -50,7 +55,7 @@ router.post("/login", async (req, res) => {
     // Generate JWT Token
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
-    res.json({ token, user: { id: user.id, username: user.username, email: user.email } });
+    res.json({ token, user: { id: user.id, username: user.username, email: user.email, role: user.role } });
   } catch (err) {
     res.status(500).json({ msg: "Server error" });
   }
