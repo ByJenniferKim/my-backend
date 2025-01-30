@@ -10,9 +10,9 @@ const router = express.Router();
 router.post("/register", async (req, res) => {
   try {
     console.log("Register endpoint hit");
+    console.log("Received data:", req.body); // Log received fata *debug*
 
-    const { username, email, password, role } = req.body; // ✅ Include role
-    console.log("Received data:", { username, email, password, role });
+    const { username, email, password, role } = req.body;
 
     // Validate role
     if (!["creator", "customer"].includes(role)) {
