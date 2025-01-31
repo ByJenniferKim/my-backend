@@ -10,9 +10,13 @@ const router = express.Router();
 router.post("/register", async (req, res) => {
   try {
     console.log("Register endpoint hit");
-    console.log("Received data:", req.body); // Log received fata *debug*
+    console.log("Received data:", req.body); // Log received data *debug*
 
+    // Check for missing fields
     const { username, email, password, role } = req.body;
+    if (!username || !email || !password || !role) {
+      return res.status(400).json({ msg: "All fields are required" });
+    }
 
     // Validate role
     if (!["creator", "customer"].includes(role)) {
@@ -38,8 +42,8 @@ router.post("/register", async (req, res) => {
 
     res.status(201).json({ msg: "User registered successfully", user });
   } catch (err) {
-    console.error("Error in reguster route:", err);
-    resizeTo.status(500).json({ msg: "Server error" });
+    console.error("Error in register route:", err);
+    res.status(500).json({ msg: "Server error" });
   }
 });
 
@@ -47,6 +51,9 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ msg: "Email and password are required" });
+    }
 
     // Check if user exists
     const user = await User.findOne({ email });
@@ -56,11 +63,18 @@ router.post("/login", async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ msg: "Invalid credentials" });
 
-    // Generate JWT Token
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    // Include 'role' in JWT Token
+    const token = jwt.sign(
+      { id: user.id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
 
-    res.json({ token, user: { id: user.id, username: user.username, email: user.email, role: user.role } });
+    res.json({
+      token,
+      user: { id: user.id, username: user.username, email: user.email, role: user.role } });
   } catch (err) {
+    console.error("Error in login route:", err);
     res.status(500).json({ msg: "Server error" });
   }
 });
